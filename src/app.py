@@ -1,12 +1,21 @@
+import os
+from pathlib import Path
 import streamlit as st
 from main import YouTubeDownloader
 from pytube.exceptions import RegexMatchError
 from stqdm import stqdm
 from time import sleep
 
-#Title of the application
 st.image('../images/banner.png')
 st.title(":zap: YouTube Downloader")
+
+
+st.markdown("""
+Please enter the URL of the YouTube video you want to download, 
+select the desired file format and resolution, 
+and specify the path where you want the video to be saved. 
+Ensure that you have write permission to the path you specify.
+""")
 
 
 user_input = str(st.text_input("Copy url of video here"))
@@ -27,23 +36,23 @@ if user_input:
     else:
         st.write('Please make a selection from the dropdown.')
     
-    output_path = st.selectbox('Output Path',['Please select an option', 'Desktop', 'Other'])
-    if output_path != 'Please select an option':
-        st.write(f'you choose {output_path} for Output Path')
-    else:
-        st.write('Please make a selection from the dropdown.')
-    
+    output_path = st.text_input("Enter the output path for the videos", 
+                                placeholder="E.g., /Users/YourName/Videos",
+                                help="Enter the full path to the folder where you want to save the downloaded video.")
+
+
     if st.button('Click here to Download the video'):
-        if output_path == 'Desktop':
+        if output_path:
+            output_path = Path(output_path)
+            output_path.mkdir(parents=True, exist_ok=True)
             downloader = YouTubeDownloader(url=user_input, 
                                            file_extension=file_ext, 
-                                           output_path='../../../../../Desktop', 
-                                           quality=file_res,
-                                           )
+                                           output_path=output_path, 
+                                           quality=file_res)
             downloader.Download()
-        
-        if output_path == 'Other':
-            pass
+            st.success(f"Video downloaded successfully to {output_path}")
+        else:
+            st.error("Please enter a valid output path.")
 
 
 
